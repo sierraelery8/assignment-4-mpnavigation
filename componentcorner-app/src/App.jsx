@@ -1,14 +1,29 @@
 import './App.css';
-import { useState } from 'react';
-import ProductCard from './components/ProductCard';
-import CartItem from './components/CartItem';
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Header from './components/Header';
-import Hero from './components/Hero';
 import Footer from './components/Footer';
+
+import HomePage from './pages/HomePage';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailsPage from './pages/ProductDetailsPage';
+import CartPage from './pages/CartPage';
 
 
 function App() {
-  const [cart, setCart] = useState([]);
+
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
 
   const products = [
     {
@@ -16,90 +31,105 @@ function App() {
       name: "Designer Pendant Light",
       price: 199.99,
       image: "https://placehold.co/600x400",
-      description: "A statement lighting fixture designed to enhance dining rooms, kitchens, and modern living spaces with elegant style."
+      description:
+        "A statement lighting fixture designed to enhance dining rooms, kitchens, and modern living spaces with elegant style."
     },
     {
       id: 2,
       name: "Brass Floor Mirror",
       price: 279.99,
       image: "https://placehold.co/600x400",
-      description: "A full-length brass mirror that adds depth, warmth, and sophistication to any interior."
+      description:
+        "A full-length brass mirror that adds depth, warmth, and sophistication to any interior."
     },
     {
       id: 3,
       name: "Linen Sofa Throw",
       price: 54.99,
       image: "https://placehold.co/600x400",
-      description: "A soft textured linen throw blanket that brings comfort and a refined touch to your sofa or lounge area."
+      description:
+        "A soft textured linen throw blanket that brings comfort and a refined touch to your sofa or lounge area."
     }
   ];
+
 
   function addToCart(product) {
     setCart([...cart, product]);
   }
 
+
   function removeFromCart(id) {
     setCart(cart.filter((item) => item.id !== id));
   }
 
-  const cartTotal = cart.reduce((total, item) => {
-    return total + item.price;
-  }, 0);
 
   return (
-    <div className="app">
+    <BrowserRouter>
 
-      <Header
-        storeName="Marie Maison Interiors"
-        cartCount={cart.length}
-      />
+      <div className="app">
 
-      <Hero
-        title="Elevated Interiors for Timeless Living"
-        subtitle="Discover thoughtfully designed pieces that bring warmth, elegance, and comfort into your home."
-        buttonText="Shop Collection"
-      />
+        <Header
+          storeName="Marie Maison Interiors"
+          cartCount={cart.length}
+        />
 
-      <div className="product-container">
 
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onAddToCart={addToCart}
+        <Routes>
+
+          <Route
+            path="/"
+            element={
+              <HomePage />
+            }
           />
-        ))}
 
-      </div>
 
-      <div className="cart-section">
-        <h2>Shopping Cart</h2>
+          <Route
+            path="/products"
+            element={
+              <ProductsPage
+                products={products}
+                addToCart={addToCart}
+              />
+            }
+          />
 
-        {cart.length === 0 ? (
-          <p>Your cart is empty.</p>
-        ) : (
-          <>
-            {cart.map((item, index) => (
-              <CartItem
-                key={`${item.id}-${index}`}
-                item={item}
+
+          <Route
+            path="/product/:id"
+            element={
+              <ProductDetailsPage
+                products={products}
+                addToCart={addToCart}
+              />
+            }
+          />
+
+
+          <Route
+            path="/cart"
+            element={
+              <CartPage
+                cart={cart}
                 removeFromCart={removeFromCart}
               />
-            ))}
+            }
+          />
 
-            <h3>Cart Total: ${cartTotal.toFixed(2)}</h3>
-          </>
-        )}
+        </Routes>
+
+
+        <Footer
+          storeName="Marie Maison Interiors"
+          email="hello@mariemaisoninteriors.com"
+          location="Louisville, Kentucky"
+        />
+
       </div>
 
-      <Footer
-        storeName="Marie Maison Interiors"
-        email="hello@mariemaisoninteriors.com"
-        location="Louisville, Kentucky"
-      />
-
-    </div>
+    </BrowserRouter>
   );
 }
+
 
 export default App;
